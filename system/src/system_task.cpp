@@ -84,6 +84,12 @@ void manage_serial_flasher()
     {
         system_firmwareUpdate(&Serial);
     }
+#if (PLATFORM_ID==88) && defined (START_AVRDUDE_FLASHER_SERIAL_SPEED)
+    else if(SPARK_FLASH_UPDATE == 4)
+    {
+        system_avrdudeFirmwareUpdate(&Serial);
+    }
+#endif
 }
 
 /**
@@ -95,7 +101,7 @@ void manage_network_connection()
     {
         if (SPARK_WLAN_STARTED)
         {
-            WARN("Resetting WLAN!");
+            WARN("!! Resetting WLAN due to %s", (WLAN_WD_TO()) ? "WLAN_WD_TO()":((SPARK_WLAN_RESET) ? "SPARK_WLAN_RESET" : "SPARK_WLAN_SLEEP"));
             auto was_sleeping = SPARK_WLAN_SLEEP;
             auto was_disconnected = network.manual_disconnect();
             cloud_disconnect();
@@ -111,6 +117,7 @@ void manage_network_connection()
     {
         if (!SPARK_WLAN_STARTED || (SPARK_CLOUD_CONNECT && !network.connected()))
         {
+            INFO("Network Connect: %s", (!SPARK_WLAN_STARTED) ? "!SPARK_WLAN_STARTED" : "SPARK_CLOUD_CONNECT && !network.connected()");
             network.connect();
         }
     }

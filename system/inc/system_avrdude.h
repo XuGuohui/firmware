@@ -1,5 +1,4 @@
 /**
- ******************************************************************************
   Copyright (c) 2015 Particle Industries, Inc.  All rights reserved.
 
   This library is free software; you can redistribute it and/or
@@ -17,37 +16,25 @@
  ******************************************************************************
  */
 
-#ifndef HAL_PLATFORM_H
-#define	HAL_PLATFORM_H
+#ifndef SYSTEM_AVRDUDE_H_
+#define SYSTEM_AVRDUDE_H_
 
-#ifdef	__cplusplus
+#include "file_transfer.h"
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct Stream Stream;
+#include <stdint.h>
 
-
-#if PLATFORM_ID<9 || PLATFORM_ID==88
-    #define HAL_PLATFORM_WIFI 1
+#if (PLATFORM_ID==88)
+bool Avrdude_Serial_Flash_Update(Stream *serialObj, FileTransfer::Descriptor& desc, void*);
 #endif
 
-#if PLATFORM_ID==10
-#define HAL_PLATFORM_CELLULAR 1
-#endif
-
-
-#ifndef HAL_PLATFORM_WIFI
-#define HAL_PLATFORM_WIFI 0
-#endif
-
-#ifndef HAL_PLATFORM_CELLULAR
-#define HAL_PLATFORM_CELLULAR 0
-#endif
-
-
-
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* HAL_PLATFORM_H */
+#endif /* SYSTEM_AVRDUDE_H */
 
