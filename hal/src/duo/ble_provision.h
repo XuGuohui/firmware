@@ -20,8 +20,9 @@ extern "C" {
 /*****************************************************************************
  * Function Prototypes
  *****************************************************************************/
-void bt_statck_init( void );
-void bt_loop_event(void);
+void ble_provision_init(void);
+void ble_provision_loop(void);
+void ble_provision_finalize(void);
 
 #ifdef __cplusplus
 }
