@@ -25,13 +25,13 @@
 #include <stdio.h>
 #include "wiced.h"
 #include "bt_target.h"
-#include "wiced_bt_stack.h"
 #include "wiced_bt_dev.h"
 #include "wiced_bt_ble.h"
 #include "wiced_bt_gatt.h"
 #include "wiced_bt_cfg.h"
 #include "ble_provision_gatt_db.h"
 #include "ble_provision.h"
+#include "ble_hal.h"
 #include "wlan_hal.h"
 #include "rgbled.h"
 #include "dct.h"
@@ -103,19 +103,15 @@ typedef struct
 /******************************************************
  *               Function Declarations
  ******************************************************/
-static void ble_provision_device_init(void);
 static void ble_provision_notify( uint16_t attr_handle, uint8_t len, uint8_t *pbuf);
 static void ble_provision_send_ap_details(uint8_t idx);
 static void ble_provision_send_ip_config(void);
 static void ble_provision_send_sys_info(void);
 
-static wiced_bt_dev_status_t ble_provision_management_cback(wiced_bt_management_evt_t event, wiced_bt_management_evt_data_t *p_event_data);
 static wiced_bt_gatt_status_t ble_provision_gatt_cback(wiced_bt_gatt_evt_t event, wiced_bt_gatt_event_data_t *p_event_data);
 static wiced_bt_gatt_status_t ble_provision_gatt_write_request(wiced_bt_gatt_write_t *p_write_request);
 static wiced_bt_gatt_status_t ble_provision_gatt_read_request(wiced_bt_gatt_read_t *p_read_request);
 static wiced_result_t ble_provision_scan_result_handler(wiced_scan_handler_result_t* malloced_scan_result);
-
-extern bool fetch_or_generate_setup_ssid(wiced_ssid_t* SSID);
 
 
 /******************************************************
@@ -144,25 +140,51 @@ static uint8_t scan_record_cnt = 0;
 static uint8_t configured_ap_idx = 0xFF;
 static uint8_t provision_status = BLE_PROVISION_STATUS_IDLE;
 
-static wiced_ssid_t device_name;
-
 /* Stack and buffer pool configuration tables */
 extern wiced_bt_cfg_settings_t wiced_bt_cfg_settings;
-extern const wiced_bt_cfg_buf_pool_t wiced_bt_cfg_buf_pools[];
 
 
 /******************************************************
  *               Function Definitions
  ******************************************************/
+/* Initialize peripheral */
 void ble_provision_init(void)
 {
-	fetch_or_generate_setup_ssid(&device_name);
-	device_name.value[device_name.length] = '\0';
+	static bool gatt_db_init_done = false;
 
-	wiced_bt_cfg_settings.device_name = device_name.value;
+	if(!gatt_db_init_done)
+	{
+		bt_stack_init();
 
-	/* Initialize Bluetooth controller and host stack */
-	wiced_bt_stack_init( ble_provision_management_cback, &wiced_bt_cfg_settings, wiced_bt_cfg_buf_pools );
+		wiced_bt_ble_advert_data_t adv_data;
+		wiced_bt_ble_128service_t  service;
+
+		uint8_t buf[16] = { UUID_SERVCLASS_BLE_PROVISION };
+
+		/* Set advertising data: device name and discoverable flag */
+		service.list_cmpl = WICED_TRUE;
+		memcpy(service.uuid128, buf, MAX_UUID_SIZE);
+		adv_data.flag = 0x06;
+		adv_data.p_services_128b = &service;
+
+		wiced_bt_ble_set_advertisement_data(BTM_BLE_ADVERT_BIT_FLAGS|BTM_BLE_ADVERT_BIT_SERVICE_128, &adv_data);
+
+		/* Register for gatt event notifications */
+		wiced_bt_gatt_register(&ble_provision_gatt_cback);
+
+		/* Initialize GATT database */
+		wiced_bt_gatt_db_init ((uint8_t *)gatt_db, gatt_db_size);
+
+		gatt_db_init_done = true;
+	}
+
+	provision_status = BLE_PROVISION_STATUS_IDLE;
+	configured_ap_idx = 0xFF;
+	scan_record_cnt = 0;
+	temp_config.device_configured = WICED_FALSE;
+
+    /* start LE advertising */
+    wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_HIGH, 0, NULL);
 }
 
 void ble_provision_loop(void)
@@ -177,34 +199,6 @@ void ble_provision_finalize(void)
 	ble_provision_send_ip_config();
 
 	wiced_bt_gatt_disconnect(connect_id);
-}
-
-/* Initialize peripheral */
-static void ble_provision_device_init(void)
-{
-	wiced_bt_ble_advert_data_t adv_data;
-	wiced_bt_ble_128service_t  service;
-
-	uint8_t buf[16] = { UUID_SERVCLASS_BLE_PROVISION };
-
-    /* Set advertising data: device name and discoverable flag */
-	service.list_cmpl = WICED_TRUE;
-	memcpy(service.uuid128, buf, MAX_UUID_SIZE);
-    adv_data.flag = 0x06;
-    adv_data.p_services_128b = &service;
-
-    wiced_bt_ble_set_advertisement_data(BTM_BLE_ADVERT_BIT_FLAGS|BTM_BLE_ADVERT_BIT_SERVICE_128, &adv_data);
-
-    /* Register for gatt event notifications */
-    wiced_bt_gatt_register(&ble_provision_gatt_cback);
-
-    /* Initialize GATT database */
-    wiced_bt_gatt_db_init ((uint8_t *)gatt_db, gatt_db_size);
-
-    /* Enable Bluetooth LE advertising and connectability */
-
-    /* start LE advertising */
-    wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_HIGH, 0, NULL);
 }
 
 static void ble_provision_notify( uint16_t attr_handle, uint8_t len, uint8_t *pbuf)
@@ -432,28 +426,6 @@ static void ble_provision_send_sys_info(void)
 /******************************************************
  *             Callback Function Definitions
  ******************************************************/
-/* Bluetooth management event handler */
-static wiced_bt_dev_status_t ble_provision_management_cback (wiced_bt_management_evt_t event, wiced_bt_management_evt_data_t *p_event_data)
-{
-    wiced_bt_dev_status_t status = WICED_BT_SUCCESS;
-    switch (event)
-    {
-    case BTM_ENABLED_EVT:
-        /* Bluetooth controller and host stack enabled */
-        if (p_event_data->enabled.status == WICED_BT_SUCCESS)
-        {
-            /* Enable peripheral */
-        	ble_provision_device_init();
-        }
-        break;
-
-    default:
-        break;
-    }
-
-    return (status);
-}
-
 /* GATT event handler */
 static wiced_bt_gatt_status_t ble_provision_gatt_cback(wiced_bt_gatt_evt_t event, wiced_bt_gatt_event_data_t *p_event_data)
 {
@@ -547,6 +519,8 @@ static wiced_bt_gatt_status_t ble_provision_gatt_write_request(wiced_bt_gatt_wri
 
         		if(record_idx < scan_record_cnt)
         		{
+        			temp_config.device_configured = WICED_TRUE;
+
         			if(configured_ap_idx != record_idx)
 					{
 						memset(temp_config.ap_entry.security_key, 0x00, 64);
@@ -556,7 +530,6 @@ static wiced_bt_gatt_status_t ble_provision_gatt_write_request(wiced_bt_gatt_wri
 						temp_config.ap_entry.security_key_length = key_len;
 
 						memcpy(&temp_config.ap_entry.details, &scan_record[record_idx], sizeof(wiced_ap_info_t));
-						temp_config.device_configured = WICED_TRUE;
 
 						wiced_dct_write( &temp_config, DCT_WIFI_CONFIG_SECTION, 0, sizeof(temp_config_t) );
 					}
