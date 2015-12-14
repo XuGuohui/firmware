@@ -30,19 +30,20 @@ uint16_t sFLASH_If_CheckAdd(uint32_t Add);
 /* Private variables ---------------------------------------------------------*/
 DFU_MAL_Prop_TypeDef DFU_sFlash_cb =
 {
-        sFLASH_IF_STRING,
-        sFLASH_If_Init,
-        sFLASH_If_DeInit,
-        sFLASH_If_Erase,
-        sFLASH_If_Write,
-        sFLASH_If_Read,
-        sFLASH_If_CheckAdd,
+    sFLASH_IF_STRING,
+    sFLASH_If_Init,
+    sFLASH_If_DeInit,
+    sFLASH_If_Erase,
+    sFLASH_If_Write,
+    sFLASH_If_Read,
+    sFLASH_If_CheckAdd,
 #if PLATFORM_ID == PLATFORM_DUO_PRODUCTION
-		200,
+    5, /* Host polling time interval in ms when waiting erasing operation complete */
+    5  /* Host polling time interval in ms when waiting programming operation complete */
 #else
-        50, /* Erase Time in ms */
+    50, /* Erase Time in ms */
+    50  /* Programming Time in ms */
 #endif
-        50  /* Programming Time in ms */
 };
 
 /* Private functions ---------------------------------------------------------*/

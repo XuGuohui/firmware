@@ -334,9 +334,9 @@ void LED_Init(Led_TypeDef Led)
 void Set_RGB_LED_Values(uint16_t r, uint16_t g, uint16_t b)
 {
 #if PLATFORM_ID == PLATFORM_DUO_PRODUCTION
-	TIM3->CCR3 = r;
+	TIM2->CCR4 = r;
 	TIM3->CCR4 = g;
-	TIM2->CCR4 = b;
+	TIM3->CCR3 = b;
 #else
 #ifdef RGB_LINES_REVERSED
     TIM2->CCR4 = r;
@@ -353,9 +353,9 @@ void Set_RGB_LED_Values(uint16_t r, uint16_t g, uint16_t b)
 void Get_RGB_LED_Values(uint16_t* values)
 {
 #if PLATFORM_ID == PLATFORM_DUO_PRODUCTION
-	values[0] = TIM3->CCR3;
+	values[0] = TIM2->CCR4;
     values[1] = TIM3->CCR4;
-    values[2] = TIM2->CCR4;
+    values[2] = TIM3->CCR3;
 #else
 #ifdef RGB_LINES_REVERSED
     values[0] = TIM2->CCR4;
@@ -651,6 +651,19 @@ void Save_SystemFlags()
 {
     Save_SystemFlags_Impl(&system_flags);
 }
+
+#if PLATFORM_ID == 88
+void Load_Wiced_App_Flag(uint16_t* wiced_app_flag)
+{
+    const void* wiced_app_flag_store = dct_read_app_data(2977);
+    memcpy(wiced_app_flag, wiced_app_flag_store, sizeof(uint16_t));
+}
+
+void Save_Wiced_App_Flag(const uint16_t* wiced_app_flag)
+{
+    dct_write_app_data(wiced_app_flag, 2977, sizeof(*wiced_app_flag));
+}
+#endif
 
 bool FACTORY_Flash_Reset(void)
 {
