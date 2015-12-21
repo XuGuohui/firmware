@@ -41,7 +41,6 @@
 #include "spark_wiring_fuel.h"  
 #include "spark_wiring_print.h"
 #include "spark_wiring_usartserial.h"
-#include "spark_wiring_hciserial.h"
 #include "spark_wiring_usbserial.h"
 #include "spark_wiring_usbmouse.h"
 #include "spark_wiring_usbkeyboard.h"
@@ -64,6 +63,10 @@
 #include "fast_pin.h"
 #include "string_convert.h"
 #include "debug_output_handler.h"
+
+#if PLATFORM_ID==88
+#include "spark_wiring_hciserial.h"
+#endif
 
 // this was being implicitly pulled in by some of the other headers
 // adding here for backwards compatibility.

@@ -18,7 +18,6 @@
 
 #include "spark_wiring_system.h"
 #include "spark_wiring_usbserial.h"
-#include "spark_wiring_hciserial.h"
 #include "system_task.h"
 #include "system_cloud.h"
 #include "system_cloud_internal.h"
@@ -42,6 +41,7 @@
 #include "system_threading.h"
 #if PLATFORM_ID==88
 #include "ble_hal.h"
+#include "spark_wiring_hciserial.h"
 #endif
 
 using spark::Network;
