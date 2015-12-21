@@ -18,6 +18,7 @@
 
 #include "spark_wiring_system.h"
 #include "spark_wiring_usbserial.h"
+#include "spark_wiring_hciserial.h"
 #include "system_task.h"
 #include "system_cloud.h"
 #include "system_cloud_internal.h"
@@ -129,7 +130,7 @@ void manage_network_connection()
 #if PLATFORM_ID == 88
 void manage_ble_event()
 {
-	ble_idle_event();
+    HAL_HCI_USART_receiveEvent();
 }
 #endif
 
