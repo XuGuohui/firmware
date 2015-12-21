@@ -22,7 +22,7 @@
  */
 
 #ifndef HAL_DYNALIB_HCI_USART_H
-#define	HAL_DYNALIB_HCI_USART_H
+#define HAL_DYNALIB_HCI_USART_H
 
 #if PLATFORM_ID == 88 // Duo
 

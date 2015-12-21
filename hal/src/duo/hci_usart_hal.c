@@ -56,22 +56,22 @@ typedef struct STM32_USART_Info {
  */
 STM32_USART_Info HCI_USART_MAP[TOTAL_HCI_USARTS] =
 {
-        /*
-         * USART_peripheral (USARTx/UARTx; not using others)
-         * clock control register (APBxENR)
-         * clock enable bit value (RCC_APBxPeriph_USARTx/RCC_APBxPeriph_UARTx)
-         * interrupt number (USARTx_IRQn/UARTx_IRQn)
-         * TX pin
-         * RX pin
-         * TX pin source
-         * RX pin source
-         * GPIO AF map (GPIO_AF_USARTx/GPIO_AF_UARTx)
-         * <tx_buffer pointer> used internally and does not appear below
-         * <rx_buffer pointer> used internally and does not appear below
-         * <usart enabled> used internally and does not appear below
-         * <usart transmitting> used internally and does not appear below
-         */
-        { USART6, &RCC->APB2ENR, RCC_APB2Periph_USART6, USART6_IRQn, BT_TX, BT_RX, GPIO_PinSource6, GPIO_PinSource7, GPIO_AF_USART6 } // USART 6
+    /*
+     * USART_peripheral (USARTx/UARTx; not using others)
+     * clock control register (APBxENR)
+     * clock enable bit value (RCC_APBxPeriph_USARTx/RCC_APBxPeriph_UARTx)
+     * interrupt number (USARTx_IRQn/UARTx_IRQn)
+     * TX pin
+     * RX pin
+     * TX pin source
+     * RX pin source
+     * GPIO AF map (GPIO_AF_USARTx/GPIO_AF_UARTx)
+     * <tx_buffer pointer> used internally and does not appear below
+     * <rx_buffer pointer> used internally and does not appear below
+     * <usart enabled> used internally and does not appear below
+     * <usart transmitting> used internally and does not appear below
+     */
+    { USART6, &RCC->APB2ENR, RCC_APB2Periph_USART6, USART6_IRQn, BT_TX, BT_RX, GPIO_PinSource6, GPIO_PinSource7, GPIO_AF_USART6 } // USART 6
 };
 
 static USART_InitTypeDef USART_InitStructure;
@@ -111,7 +111,7 @@ void HAL_HCI_USART_registerReceiveHandler(ReceiveHandler_t handler)
 void HAL_HCI_USART_receiveEvent(void)
 {
     if(receiveHandler != NULL)
-    	receiveHandler();
+        receiveHandler();
 }
 
 int32_t HAL_HCI_USART_downloadFirmeare(HAL_HCI_USART_Serial serial)
@@ -177,7 +177,7 @@ int32_t HAL_HCI_USART_downloadFirmeare(HAL_HCI_USART_Serial serial)
 
     while(firmware_size)
     {
-    	// content of data length + 2 bytes of opcode and 1 byte of data length
+        // content of data length + 2 bytes of opcode and 1 byte of data length
         data_length    = firmware[2] + 3;
         command_opcode = *(hci_opcode_t*)firmware;
 

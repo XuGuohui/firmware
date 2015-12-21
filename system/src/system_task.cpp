@@ -130,8 +130,7 @@ void manage_network_connection()
 #if PLATFORM_ID == 88
 void manage_ble_event()
 {
-	//ble_idle_event();
-	HAL_HCI_USART_receiveEvent();
+    HAL_HCI_USART_receiveEvent();
 }
 #endif
 

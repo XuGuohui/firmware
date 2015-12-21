@@ -18,7 +18,7 @@ extern "C" {
 
 /* Exported defines ----------------------------------------------------------*/
 
-#define TOTAL_HCI_USARTS		      1
+#define TOTAL_HCI_USARTS              1
 #define HCI_USART_BUFFER_SIZE         512
 
 /* Exported types ------------------------------------------------------------*/
