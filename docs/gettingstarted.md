@@ -40,7 +40,7 @@ Open up a terminal window, and switch branch to 'release/stable'
 Navigate to the `modules` folder under firmware
 (i.e. `cd firmware/modules`) and type:
 
-    make clean all PLATFORM=photon -s program-dfu
+    make clean all PLATFORM=duo -s program-dfu
 
 This will clean build the system firmware and the default main application (`firmware/user/src/application.cpp`) which contains Tinker, but you may overwrite this with your own application and add any required dependencies. The `-s` silences the verbose output, so be patient while it builds.  If your device is in DFU mode, it will then download the 3 binaries one at a time.  For more custom application location solutions, see the [makefile documentation](build.md) and learn how to use the `APP=myapp` option.
 
