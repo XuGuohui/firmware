@@ -35,7 +35,7 @@ Note, if you've downloaded or cloned these previously, you'll want to `git pull`
 
 Open up a terminal window, and switch branch to 'release/stable'
 
-    git checkout release/stable
+    git checkout -b release/stable
 
 Navigate to the `modules` folder under firmware
 (i.e. `cd firmware/modules`) and type:
